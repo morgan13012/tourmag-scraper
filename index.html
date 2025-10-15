@@ -190,7 +190,7 @@
         
         loadingEl.style.display = 'none';
         
-        if (allOffers.length === 0) {
+      if (allOffers.length === 0) {
           resultsEl.innerHTML = '<div class="error">Aucune offre trouvée.</div>';
         } else {
           resultsEl.innerHTML = `
@@ -199,8 +199,9 @@
               <button class="refresh-btn" onclick="fetchOffers()">🔄 Actualiser</button>
             </div>
           `;
-          updateStats(allOffers.length, allOffers.length);
-          renderOffers(allOffers);
+          updateStats(0, allOffers.length);
+          // Ne pas afficher les offres au chargement
+          resultsEl.innerHTML += '<p style="text-align:center;color:#666;margin-top:2rem;">Utilisez la barre de recherche ci-dessus pour trouver une offre</p>';
         }
         
       } catch (error) {
@@ -216,9 +217,13 @@
       }
     }
 
-    function updateStats(filtered, total) {
+  function updateStats(filtered, total) {
       const statsEl = document.getElementById('stats');
-      statsEl.textContent = `📊 ${filtered} offre(s) affichée(s) sur ${total} au total`;
+      if (filtered === 0 && total > 0) {
+        statsEl.textContent = `📊 ${total} offres disponibles - Tapez pour rechercher`;
+      } else {
+        statsEl.textContent = `📊 ${filtered} offre(s) trouvée(s) sur ${total} au total`;
+      }
     }
 
     function renderOffers(offers) {
@@ -251,17 +256,24 @@
       });
     }
 
-    function setupSearch() {
+ function setupSearch() {
       const input = document.getElementById("search");
       
       input.addEventListener("input", () => {
-        const query = input.value.toLowerCase();
-        const filtered = allOffers.filter(o =>
-          o.title.toLowerCase().includes(query) ||
-          o.description.toLowerCase().includes(query)
-        );
-        updateStats(filtered.length, allOffers.length);
-        renderOffers(filtered);
+        const query = input.value.toLowerCase().trim();
+        
+        if (query === '') {
+          // Si la recherche est vide, ne rien afficher
+          updateStats(0, allOffers.length);
+          document.getElementById('results').innerHTML = '<p style="text-align:center;color:#666;margin-top:2rem;">Utilisez la barre de recherche ci-dessus pour trouver une offre</p>';
+        } else {
+          // Filtrer et afficher les résultats
+          const filtered = allOffers.filter(o =>
+            o.title.toLowerCase().includes(query)
+          );
+          updateStats(filtered.length, allOffers.length);
+          renderOffers(filtered);
+        }
       });
     }
 
