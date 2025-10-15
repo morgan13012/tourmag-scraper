@@ -1,0 +1,9 @@
+{
+  "name": "tourmag-scraper",
+  "version": "1.0.0",
+  "description": "Scraper d'offres d'emploi TourMaG",
+  "type": "module",
+  "dependencies": {
+    "node-html-parser": "^6.1.13"
+  }
+}
