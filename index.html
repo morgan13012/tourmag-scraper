@@ -12,7 +12,7 @@
     }
 
     body {
-      font-family: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Roboto", "Helvetica Neue", Arial, sans-serif;
       background: #f8f9fa;
       color: #222;
       line-height: 1.6;
@@ -155,21 +155,22 @@
 
     .stats-bar {
       background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
+      border-radius: 10px;
+      padding: 1.2rem 1.5rem;
       margin-bottom: 2rem;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 1rem;
+      border: 1px solid #e8e8e8;
     }
 
     .stats-count {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: 600;
-      color: #d22630;
+      color: #2c3e50;
     }
 
     .sort-options {
@@ -199,55 +200,63 @@
 
     .offer {
       background: white;
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 1.8rem;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
       transition: all 0.3s ease;
-      border-left: 4px solid #d22630;
+      border-left: 4px solid #3498db;
       position: relative;
+      border: 1px solid #e8e8e8;
+      border-left-width: 4px;
     }
 
     .offer:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      border-left-color: #2980b9;
     }
 
     .offer-badge {
       position: absolute;
       top: 1rem;
       right: 1rem;
-      background: #28a745;
+      background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
       color: white;
-      padding: 0.3rem 0.8rem;
+      padding: 0.4rem 0.9rem;
       border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
+      font-size: 0.7rem;
+      font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
     }
 
     .offer-title {
-      font-family: "Montserrat", sans-serif;
-      font-weight: 700;
-      font-size: 1.3rem;
-      color: #d22630;
+      font-family: "Segoe UI", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 600;
+      font-size: 1.15rem;
+      color: #1a202c;
       text-decoration: none;
       display: block;
       margin-bottom: 1rem;
-      line-height: 1.4;
+      line-height: 1.6;
+      padding-right: 5rem;
+      transition: color 0.2s ease;
     }
 
     .offer-title:hover {
-      color: #b01e28;
-      text-decoration: underline;
+      color: #2563eb;
     }
 
     .offer-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 1.5rem;
-      margin-top: 1rem;
-      color: #666;
-      font-size: 0.95rem;
+      gap: 1.8rem;
+      margin-top: 1.2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #f0f0f0;
+      color: #6c757d;
+      font-size: 0.9rem;
     }
 
     .offer-meta-item {
@@ -257,7 +266,8 @@
     }
 
     .offer-meta-item strong {
-      color: #333;
+      color: #495057;
+      font-weight: 600;
     }
 
     .loading-container {
@@ -267,7 +277,7 @@
 
     .spinner {
       border: 4px solid #f3f3f3;
-      border-top: 4px solid #d22630;
+      border-top: 4px solid #3498db;
       border-radius: 50%;
       width: 50px;
       height: 50px;
