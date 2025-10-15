@@ -7,69 +7,51 @@ export default async function handler(req, res) {
   try {
     const BASE_URL = 'https://www.tourmag.com/welcometothetravel/';
     const allOffers = [];
-    let pageCount = 0;
-    const maxPages = 20;
+    const maxPages = 30; // Charger jusqu'à 30 pages (300 offres)
     
-    while (pageCount < maxPages) {
-      const start = pageCount * 10;
-      const url = pageCount === 0 ? BASE_URL : `${BASE_URL}?start=${start}`;
+    // Charger toutes les pages en parallèle pour plus de rapidité
+    const pagesToFetch = Array.from({ length: maxPages }, (_, i) => i);
+    
+    const fetchPromises = pagesToFetch.map(async (pageNum) => {
+      const start = pageNum * 10;
+      const url = pageNum === 0 ? BASE_URL : `${BASE_URL}?start=${start}`;
       
-      console.log(`Chargement page ${pageCount + 1}: ${url}`);
-      
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
-        }
-      });
-      
-      if (!response.ok) {
-        console.error(`Erreur HTTP ${response.status}`);
-        break;
-      }
-      
-      const html = await response.text();
-      const root = parse(html);
-      
-      
-      // Cibler uniquement les offres dans le bloc avec l'ID spécifique
-      const offerBlock = root.querySelector('#mod_38716852');
-      
-      if (!offerBlock) {
-        console.log('Bloc d\'offres non trouvé');
-        break;
-      }
-      
-      const offerElements = offerBlock.querySelectorAll('div.cel1');
-      
-      console.log(`Page ${pageCount + 1}: ${offerElements.length} éléments cel1 trouvés`);
-      
-      if (offerElements.length === 0) {
-        console.log('Aucune offre trouvée, arrêt du scraping');
-        break;
-      }
-      
-      offerElements.forEach(element => {
-        // Récupérer le lien <a> à l'intérieur
-        const link = element.querySelector('a');
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
+          }
+        });
         
-        if (link) {
-          const href = link.getAttribute('href');
-          const title = link.text.trim();
+        if (!response.ok) return [];
+        
+        const html = await response.text();
+        const root = parse(html);
+        
+        // Cibler uniquement les offres dans le bloc avec l'ID spécifique
+        const offerBlock = root.querySelector('#mod_38716852');
+        if (!offerBlock) return [];
+        
+        const offerElements = offerBlock.querySelectorAll('div.cel1');
+        const pageOffers = [];
+        
+        offerElements.forEach(element => {
+          const link = element.querySelector('a');
           
-          if (href && title) {
-            // Construire l'URL complète
-            let fullUrl = href;
-            if (!href.startsWith('http')) {
-              fullUrl = href.startsWith('/') 
-                ? `https://www.tourmag.com${href}` 
-                : `https://www.tourmag.com/${href}`;
-            }
+          if (link) {
+            const href = link.getAttribute('href');
+            const title = link.text.trim();
             
-            // Vérifier si l'offre n'est pas déjà dans la liste
-            if (!allOffers.find(o => o.link === fullUrl)) {
-              // Chercher la date dans l'élément parent ou voisin
+            if (href && title) {
+              let fullUrl = href;
+              if (!href.startsWith('http')) {
+                fullUrl = href.startsWith('/') 
+                  ? `https://www.tourmag.com${href}` 
+                  : `https://www.tourmag.com/${href}`;
+              }
+              
               let date = '';
               const parentElement = element.parentNode;
               if (parentElement) {
@@ -79,7 +61,7 @@ export default async function handler(req, res) {
                 }
               }
               
-              allOffers.push({
+              pageOffers.push({
                 title: title,
                 link: fullUrl,
                 description: '',
@@ -87,14 +69,25 @@ export default async function handler(req, res) {
               });
             }
           }
+        });
+        
+        return pageOffers;
+      } catch (error) {
+        console.error(`Erreur page ${pageNum}:`, error);
+        return [];
+      }
+    });
+    
+    const results = await Promise.all(fetchPromises);
+    
+    // Fusionner tous les résultats et dédupliquer
+    results.forEach(pageOffers => {
+      pageOffers.forEach(offer => {
+        if (!allOffers.find(o => o.link === offer.link)) {
+          allOffers.push(offer);
         }
       });
-      
-      pageCount++;
-      
-      // Pause pour ne pas surcharger le serveur
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
+    });
     
     console.log(`Total: ${allOffers.length} offres récupérées`);
     
