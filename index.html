@@ -5,100 +5,289 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Moteur de recherche des offres d'emploi TourMaG</title>
   <style>
-    body {
-      font-family: "Lato", Arial, sans-serif;
-      background-color: #f7f8fa;
-      color: #222;
-      padding: 2rem;
-      line-height: 1.6;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    h1 {
+    body {
+      font-family: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #f7f8fa 0%, #e8edf2 100%);
+      color: #222;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #d22630 0%, #a01e28 100%);
+      color: white;
+      padding: 2rem 1rem;
       text-align: center;
-      color: #d22630;
+      box-shadow: 0 4px 12px rgba(210, 38, 48, 0.2);
+    }
+
+    .header h1 {
       font-family: "Montserrat", sans-serif;
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .search-section {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      margin-bottom: 2rem;
+    }
+
+    .search-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .search-box {
+      position: relative;
       margin-bottom: 1.5rem;
     }
 
-    #search {
-      display: block;
-      margin: 0 auto 1rem auto;
-      padding: 0.8rem 1.2rem;
+    .search-box input {
       width: 100%;
-      max-width: 500px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 1rem;
+      padding: 1rem 1rem 1rem 3rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
     }
 
-    #stats {
-      text-align: center;
+    .search-box input:focus {
+      outline: none;
+      border-color: #d22630;
+      box-shadow: 0 0 0 3px rgba(210, 38, 48, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 1.2rem;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .filter-group label {
+      font-weight: 600;
+      color: #555;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-group select {
+      padding: 0.8rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-group select:focus {
+      outline: none;
+      border-color: #d22630;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: #d22630;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #b01e28;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(210, 38, 48, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #555;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .stats-bar {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
       margin-bottom: 2rem;
-      color: #666;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .stats-count {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #d22630;
+    }
+
+    .sort-options {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .sort-options label {
+      font-weight: 600;
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    .sort-options select {
+      padding: 0.5rem 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
       font-size: 0.95rem;
+      cursor: pointer;
     }
 
     #results {
       display: grid;
-      gap: 1.2rem;
-      max-width: 800px;
-      margin: 0 auto;
+      gap: 1.5rem;
     }
 
     .offer {
       background: white;
       border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      padding: 1.5rem;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      padding: 1.8rem;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+      border-left: 4px solid #d22630;
+      position: relative;
     }
 
     .offer:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .offer-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: #28a745;
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
     }
 
     .offer-title {
       font-family: "Montserrat", sans-serif;
-      font-weight: bold;
-      font-size: 1.2rem;
+      font-weight: 700;
+      font-size: 1.3rem;
       color: #d22630;
       text-decoration: none;
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      line-height: 1.4;
     }
 
     .offer-title:hover {
+      color: #b01e28;
       text-decoration: underline;
     }
 
-    .offer-description {
-      margin-top: 0.5rem;
-      color: #444;
-      line-height: 1.5;
-    }
-
-    .offer-date {
-      margin-top: 0.8rem;
-      font-size: 0.9rem;
+    .offer-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-top: 1rem;
       color: #666;
+      font-size: 0.95rem;
     }
 
-    #loading {
+    .offer-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .offer-meta-item strong {
+      color: #333;
+    }
+
+    .loading-container {
       text-align: center;
-      font-style: italic;
-      color: #777;
-      margin: 2rem 0;
+      padding: 4rem 2rem;
     }
 
     .spinner {
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #d22630;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #d22630;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       animation: spin 1s linear infinite;
-      margin: 1rem auto;
+      margin: 0 auto 1rem;
     }
 
     @keyframes spin {
@@ -106,61 +295,152 @@
       100% { transform: rotate(360deg); }
     }
 
+    .loading-text {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+    }
+
+    .empty-state p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
     .error {
       background: #ffe6e6;
-      border: 1px solid #ff4444;
+      border: 2px solid #ff4444;
       color: #cc0000;
       padding: 1.5rem;
-      border-radius: 8px;
-      max-width: 600px;
-      margin: 2rem auto;
+      border-radius: 12px;
       text-align: center;
     }
 
-    .success-box {
-      background: #d4edda;
-      border: 1px solid #28a745;
-      color: #155724;
-      padding: 1rem;
-      border-radius: 8px;
-      max-width: 600px;
-      margin: 1rem auto;
-      text-align: center;
+    .highlight {
+      background: #fff3cd;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      font-weight: 600;
     }
 
-    .refresh-btn {
-      background: #d22630;
-      color: white;
-      border: none;
-      padding: 0.6rem 1.5rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1rem;
-      margin: 1rem auto;
-      display: block;
-    }
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.8rem;
+      }
 
-    .refresh-btn:hover {
-      background: #b01e28;
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .offer {
+        padding: 1.2rem;
+      }
+
+      .offer-title {
+        font-size: 1.1rem;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Offres d'emploi TourMaG</h1>
-  
-  <input type="text" id="search" placeholder="Rechercher une offre (titre, description...)">
-  <div id="stats"></div>
-  
-  <div id="loading">
-    <div class="spinner"></div>
-    Chargement de toutes les offres d'emploi...<br>
-    <small>Cela peut prendre 10-20 secondes</small>
+  <div class="header">
+    <h1>🔍 Offres d'emploi TourMaG</h1>
+    <p>Trouvez votre prochain job dans le tourisme</p>
   </div>
-  
-  <div id="results"></div>
+
+  <div class="container">
+    <div class="search-section">
+      <div class="search-title">
+        🎯 Rechercher une offre
+      </div>
+
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search" placeholder="Intitulé du poste, entreprise, mots-clés...">
+      </div>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label>📝 Type de contrat</label>
+          <select id="filterContract">
+            <option value="">Tous les contrats</option>
+            <option value="CDI">CDI</option>
+            <option value="CDD">CDD</option>
+            <option value="Stage">Stage</option>
+            <option value="Alternance">Alternance</option>
+            <option value="Freelance">Freelance</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>📍 Localisation</label>
+          <select id="filterLocation">
+            <option value="">Toutes les régions</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>📅 Date de publication</label>
+          <select id="filterDate">
+            <option value="">Toutes les dates</option>
+            <option value="today">Aujourd'hui</option>
+            <option value="week">Cette semaine</option>
+            <option value="month">Ce mois</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-secondary" onclick="clearFilters()">🔄 Réinitialiser les filtres</button>
+      </div>
+    </div>
+
+    <div class="stats-bar" id="statsBar" style="display: none;">
+      <div class="stats-count" id="stats"></div>
+      <div class="sort-options">
+        <label>Trier par :</label>
+        <select id="sortBy" onchange="applySorting()">
+          <option value="date">Plus récent</option>
+          <option value="alpha">Alphabétique</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="loading" class="loading-container">
+      <div class="spinner"></div>
+      <div class="loading-text">Chargement des offres d'emploi...</div>
+      <p style="color: #999; margin-top: 0.5rem;">Veuillez patienter quelques secondes</p>
+    </div>
+
+    <div id="results"></div>
+  </div>
 
   <script>
     let allOffers = [];
+    let filteredOffers = [];
+    let locations = new Set();
 
     async function fetchOffers() {
       const loadingEl = document.getElementById('loading');
@@ -170,8 +450,6 @@
       resultsEl.innerHTML = '';
       
       try {
-        // Appel à votre API Vercel
-        // ⚠️ IMPORTANT: Remplacez cette URL par votre URL Vercel après déploiement
         const API_URL = 'https://tourmag-scraper.vercel.app/api/scrape';
         
         const response = await fetch(API_URL);
@@ -188,20 +466,25 @@
         
         allOffers = data.offers;
         
-        loadingEl.style.display = 'none';
+        // Extraire les localisations uniques
+        allOffers.forEach(offer => {
+          const locationMatch = offer.title.match(/\(([^)]+)\)$/);
+          if (locationMatch) {
+            locations.add(locationMatch[1]);
+          }
+        });
         
-      if (allOffers.length === 0) {
-          resultsEl.innerHTML = '<div class="error">Aucune offre trouvée.</div>';
+        // Remplir le select des localisations
+        populateLocationFilter();
+        
+        loadingEl.style.display = 'none';
+        document.getElementById('statsBar').style.display = 'flex';
+        
+        if (allOffers.length === 0) {
+          showEmptyState('Aucune offre disponible', 'Revenez plus tard pour voir les nouvelles offres.');
         } else {
-          resultsEl.innerHTML = `
-            <div class="success-box">
-              ✅ ${allOffers.length} offres chargées avec succès !
-              <button class="refresh-btn" onclick="fetchOffers()">🔄 Actualiser</button>
-            </div>
-          `;
+          showEmptyState('Utilisez les filtres ci-dessus', 'Recherchez par mot-clé, type de contrat, localisation ou date pour trouver votre offre idéale.');
           updateStats(0, allOffers.length);
-          // Ne pas afficher les offres au chargement
-          resultsEl.innerHTML += '<p style="text-align:center;color:#666;margin-top:2rem;">Utilisez la barre de recherche ci-dessus pour trouver une offre</p>';
         }
         
       } catch (error) {
@@ -211,74 +494,184 @@
           <div class="error">
             <strong>❌ Erreur de chargement</strong><br><br>
             ${error.message}<br><br>
-            <button class="refresh-btn" onclick="fetchOffers()">Réessayer</button>
+            <button class="btn btn-primary" onclick="fetchOffers()">Réessayer</button>
           </div>
         `;
       }
     }
 
-  function updateStats(filtered, total) {
+    function populateLocationFilter() {
+      const select = document.getElementById('filterLocation');
+      const sortedLocations = Array.from(locations).sort();
+      
+      sortedLocations.forEach(loc => {
+        const option = document.createElement('option');
+        option.value = loc;
+        option.textContent = loc;
+        select.appendChild(option);
+      });
+    }
+
+    function updateStats(filtered, total) {
       const statsEl = document.getElementById('stats');
       if (filtered === 0 && total > 0) {
-        statsEl.textContent = `📊 ${total} offres disponibles - Tapez pour rechercher`;
+        statsEl.innerHTML = `📊 <strong>${total}</strong> offres disponibles`;
       } else {
-        statsEl.textContent = `📊 ${filtered} offre(s) trouvée(s) sur ${total} au total`;
+        statsEl.innerHTML = `📊 <strong>${filtered}</strong> offre(s) trouvée(s) sur <strong>${total}</strong>`;
       }
+    }
+
+    function showEmptyState(title, message) {
+      const resultsEl = document.getElementById('results');
+      resultsEl.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <h3>${title}</h3>
+          <p>${message}</p>
+        </div>
+      `;
+    }
+
+    function highlightText(text, query) {
+      if (!query) return text;
+      const regex = new RegExp(`(${query})`, 'gi');
+      return text.replace(regex, '<span class="highlight">$1</span>');
+    }
+
+    function isRecent(dateStr) {
+      // Vérifier si "NEW" ou date récente
+      return dateStr.includes('NEW');
+    }
+
+    function extractContractType(title) {
+      if (title.includes('CDI')) return 'CDI';
+      if (title.includes('CDD')) return 'CDD';
+      if (title.includes('Stage')) return 'Stage';
+      if (title.includes('Alternance')) return 'Alternance';
+      if (title.includes('Freelance')) return 'Freelance';
+      return 'Non précisé';
+    }
+
+    function extractLocation(title) {
+      const match = title.match(/\(([^)]+)\)$/);
+      return match ? match[1] : 'Non précisée';
     }
 
     function renderOffers(offers) {
       const results = document.getElementById('results');
-      const existingSuccess = results.querySelector('.success-box');
       results.innerHTML = '';
-      
-      if (existingSuccess) {
-        results.appendChild(existingSuccess);
-      }
 
       if (offers.length === 0) {
-        const noResult = document.createElement('p');
-        noResult.style.textAlign = 'center';
-        noResult.style.color = '#666';
-        noResult.textContent = 'Aucune offre ne correspond à votre recherche.';
-        results.appendChild(noResult);
+        showEmptyState('Aucune offre trouvée', 'Essayez de modifier vos critères de recherche.');
         return;
       }
 
       offers.forEach(o => {
         const div = document.createElement("div");
         div.className = "offer";
+        
+        const contractType = extractContractType(o.title);
+        const location = extractLocation(o.title);
+        const isNew = isRecent(o.pubDate);
+        
         div.innerHTML = `
+          ${isNew ? '<div class="offer-badge">NOUVEAU</div>' : ''}
           <a href="${o.link}" target="_blank" rel="noopener noreferrer" class="offer-title">${o.title}</a>
-          ${o.description ? `<div class="offer-description">${o.description}</div>` : ''}
-          <div class="offer-date">📅 ${o.pubDate}</div>
+          <div class="offer-meta">
+            <div class="offer-meta-item">
+              <span>📝</span>
+              <span><strong>Type :</strong> ${contractType}</span>
+            </div>
+            <div class="offer-meta-item">
+              <span>📍</span>
+              <span><strong>Lieu :</strong> ${location}</span>
+            </div>
+            <div class="offer-meta-item">
+              <span>📅</span>
+              <span><strong>Publié :</strong> ${o.pubDate}</span>
+            </div>
+          </div>
         `;
         results.appendChild(div);
       });
     }
 
- function setupSearch() {
-      const input = document.getElementById("search");
-      
-      input.addEventListener("input", () => {
-        const query = input.value.toLowerCase().trim();
+    function applyFilters() {
+      const searchQuery = document.getElementById('search').value.toLowerCase().trim();
+      const contractFilter = document.getElementById('filterContract').value;
+      const locationFilter = document.getElementById('filterLocation').value;
+      const dateFilter = document.getElementById('filterDate').value;
+
+      filteredOffers = allOffers.filter(offer => {
+        // Filtre recherche
+        const matchesSearch = !searchQuery || offer.title.toLowerCase().includes(searchQuery);
         
-        if (query === '') {
-          // Si la recherche est vide, ne rien afficher
-          updateStats(0, allOffers.length);
-          document.getElementById('results').innerHTML = '<p style="text-align:center;color:#666;margin-top:2rem;">Utilisez la barre de recherche ci-dessus pour trouver une offre</p>';
-        } else {
-          // Filtrer et afficher les résultats
-          const filtered = allOffers.filter(o =>
-            o.title.toLowerCase().includes(query)
-          );
-          updateStats(filtered.length, allOffers.length);
-          renderOffers(filtered);
+        // Filtre contrat
+        const matchesContract = !contractFilter || offer.title.includes(contractFilter);
+        
+        // Filtre localisation
+        const matchesLocation = !locationFilter || offer.title.includes(locationFilter);
+        
+        // Filtre date (simplifié - peut être amélioré)
+        let matchesDate = true;
+        if (dateFilter === 'today') {
+          matchesDate = offer.pubDate.includes('NEW') || offer.pubDate.includes(new Date().getDate());
+        } else if (dateFilter === 'week') {
+          matchesDate = offer.pubDate.includes('NEW') || offer.pubDate.includes('Octobre');
         }
+        
+        return matchesSearch && matchesContract && matchesLocation && matchesDate;
       });
+
+      applySorting();
+      updateStats(filteredOffers.length, allOffers.length);
+      
+      if (searchQuery || contractFilter || locationFilter || dateFilter) {
+        renderOffers(filteredOffers);
+      } else {
+        showEmptyState('Utilisez les filtres ci-dessus', 'Recherchez par mot-clé, type de contrat, localisation ou date pour trouver votre offre idéale.');
+      }
     }
 
+    function applySorting() {
+      const sortBy = document.getElementById('sortBy').value;
+      
+      if (sortBy === 'alpha') {
+        filteredOffers.sort((a, b) => a.title.localeCompare(b.title));
+      } else if (sortBy === 'date') {
+        filteredOffers.sort((a, b) => {
+          const aIsNew = a.pubDate.includes('NEW');
+          const bIsNew = b.pubDate.includes('NEW');
+          if (aIsNew && !bIsNew) return -1;
+          if (!aIsNew && bIsNew) return 1;
+          return 0;
+        });
+      }
+      
+      if (filteredOffers.length > 0) {
+        renderOffers(filteredOffers);
+      }
+    }
+
+    function clearFilters() {
+      document.getElementById('search').value = '';
+      document.getElementById('filterContract').value = '';
+      document.getElementById('filterLocation').value = '';
+      document.getElementById('filterDate').value = '';
+      document.getElementById('sortBy').value = 'date';
+      
+      filteredOffers = [];
+      updateStats(0, allOffers.length);
+      showEmptyState('Filtres réinitialisés', 'Utilisez les filtres ci-dessus pour rechercher des offres.');
+    }
+
+    // Event listeners
+    document.getElementById('search').addEventListener('input', applyFilters);
+    document.getElementById('filterContract').addEventListener('change', applyFilters);
+    document.getElementById('filterLocation').addEventListener('change', applyFilters);
+    document.getElementById('filterDate').addEventListener('change', applyFilters);
+
     // Initialisation
-    setupSearch();
     fetchOffers();
   </script>
 </body>
