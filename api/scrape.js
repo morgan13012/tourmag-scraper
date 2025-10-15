@@ -32,8 +32,16 @@ export default async function handler(req, res) {
       const html = await response.text();
       const root = parse(html);
       
-      // Cibler spécifiquement les div avec la classe "cel1"
-      const offerElements = root.querySelectorAll('div.cel1');
+      
+      // Cibler uniquement les offres dans le bloc avec l'ID spécifique
+      const offerBlock = root.querySelector('#mod_38716852');
+      
+      if (!offerBlock) {
+        console.log('Bloc d\'offres non trouvé');
+        break;
+      }
+      
+      const offerElements = offerBlock.querySelectorAll('div.cel1');
       
       console.log(`Page ${pageCount + 1}: ${offerElements.length} éléments cel1 trouvés`);
       
