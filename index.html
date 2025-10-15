@@ -340,6 +340,13 @@
       font-weight: 600;
     }
 
+    .last-update {
+      text-align: center;
+      color: #999;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
     @media (max-width: 768px) {
       .header h1 {
         font-size: 1.8rem;
@@ -427,6 +434,7 @@
         </select>
       </div>
     </div>
+    <div class="last-update" id="lastUpdate" style="display: none;"></div>
 
     <div id="loading" class="loading-container">
       <div class="spinner"></div>
@@ -479,6 +487,7 @@
         
         loadingEl.style.display = 'none';
         document.getElementById('statsBar').style.display = 'flex';
+        updateLastRefreshTime();
         
         if (allOffers.length === 0) {
           showEmptyState('Aucune offre disponible', 'Revenez plus tard pour voir les nouvelles offres.');
@@ -673,6 +682,21 @@
 
     // Initialisation
     fetchOffers();
+    
+    // Auto-refresh toutes les 30 minutes
+    setInterval(() => {
+      console.log('Auto-refresh : rechargement des offres...');
+      fetchOffers();
+    }, 30 * 60 * 1000); // 30 minutes en millisecondes
+    
+    // Afficher l'heure de la dernière mise à jour
+    function updateLastRefreshTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      const lastUpdateEl = document.getElementById('lastUpdate');
+      lastUpdateEl.textContent = `Dernière actualisation : ${timeString}`;
+      lastUpdateEl.style.display = 'block';
+    }
   </script>
 </body>
 </html>
