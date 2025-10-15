@@ -1,8 +1,6 @@
-// api/scrape.js - API Vercel Serverless Function
 import { parse } from 'node-html-parser';
 
 export default async function handler(req, res) {
-  // Autoriser CORS pour que votre page HTML puisse appeler l'API
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
   
@@ -10,16 +8,14 @@ export default async function handler(req, res) {
     const BASE_URL = 'https://www.tourmag.com/welcometothetravel/';
     const allOffers = [];
     let pageCount = 0;
-    const maxPages = 15;
+    const maxPages = 20;
     
-    // Boucle pour charger toutes les pages
     while (pageCount < maxPages) {
       const start = pageCount * 10;
       const url = pageCount === 0 ? BASE_URL : `${BASE_URL}?start=${start}`;
       
       console.log(`Chargement page ${pageCount + 1}: ${url}`);
       
-      // Fetch de la page
       const response = await fetch(url, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -36,65 +32,55 @@ export default async function handler(req, res) {
       const html = await response.text();
       const root = parse(html);
       
-      // Parser les offres
-      const links = root.querySelectorAll('a');
-      let foundOffers = 0;
+      // Cibler spécifiquement les div avec la classe "cel1"
+      const offerElements = root.querySelectorAll('div.cel1');
       
-      links.forEach(link => {
-        const href = link.getAttribute('href');
-        const text = link.text.trim();
+      console.log(`Page ${pageCount + 1}: ${offerElements.length} éléments cel1 trouvés`);
+      
+      if (offerElements.length === 0) {
+        console.log('Aucune offre trouvée, arrêt du scraping');
+        break;
+      }
+      
+      offerElements.forEach(element => {
+        // Récupérer le lien <a> à l'intérieur
+        const link = element.querySelector('a');
         
-        // Filtrer les liens qui ressemblent à des annonces
-        if (href && text && text.length > 10 &&
-            (href.includes('_a') || href.includes('/annonces/'))) {
+        if (link) {
+          const href = link.getAttribute('href');
+          const title = link.text.trim();
           
-          // Éviter navigation
-          if (text.toLowerCase().includes('suivant') ||
-              text.toLowerCase().includes('précédent') ||
-              text.toLowerCase().includes('page')) {
-            return;
-          }
-          
-          // Construire URL complète
-          let fullUrl = href;
-          if (!href.startsWith('http')) {
-            fullUrl = href.startsWith('/') 
-              ? `https://www.tourmag.com${href}` 
-              : `https://www.tourmag.com/${href}`;
-          }
-          
-          // Vérifier si pas déjà dans la liste
-          if (!allOffers.find(o => o.link === fullUrl)) {
-            // Extraire contexte
-            let description = '';
-            let date = '';
-            
-            const parent = link.parentNode;
-            if (parent) {
-              const parentText = parent.text;
-              const dateMatch = parentText.match(/(\d{1,2}\s+\w+|\d{1,2}\/\d{1,2}\/\d{4})/);
-              if (dateMatch) date = dateMatch[0];
-              description = parentText.replace(text, '').trim().substring(0, 200);
+          if (href && title) {
+            // Construire l'URL complète
+            let fullUrl = href;
+            if (!href.startsWith('http')) {
+              fullUrl = href.startsWith('/') 
+                ? `https://www.tourmag.com${href}` 
+                : `https://www.tourmag.com/${href}`;
             }
             
-            allOffers.push({
-              title: text,
-              link: fullUrl,
-              description: description || '',
-              pubDate: date || 'Non précisée'
-            });
-            
-            foundOffers++;
+            // Vérifier si l'offre n'est pas déjà dans la liste
+            if (!allOffers.find(o => o.link === fullUrl)) {
+              // Chercher la date dans l'élément parent ou voisin
+              let date = '';
+              const parentElement = element.parentNode;
+              if (parentElement) {
+                const dateElement = parentElement.querySelector('.date, .cel2, [class*="date"]');
+                if (dateElement) {
+                  date = dateElement.text.trim();
+                }
+              }
+              
+              allOffers.push({
+                title: title,
+                link: fullUrl,
+                description: '',
+                pubDate: date || 'Non précisée'
+              });
+            }
           }
         }
       });
-      
-      console.log(`Page ${pageCount + 1}: ${foundOffers} offres trouvées`);
-      
-      // Si aucune offre trouvée, on arrête
-      if (foundOffers === 0) {
-        break;
-      }
       
       pageCount++;
       
@@ -104,7 +90,6 @@ export default async function handler(req, res) {
     
     console.log(`Total: ${allOffers.length} offres récupérées`);
     
-    // Retourner les offres en JSON
     res.status(200).json({
       success: true,
       total: allOffers.length,
