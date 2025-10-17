@@ -455,8 +455,9 @@
         
         // Extraire localisations
         this.allOffers.forEach(offer => {
-          const locationMatch = offer.title.match(/\(([^)]+)\)$/);
-          if (locationMatch) this.locations.add(locationMatch[1]);
+          if (offer.location && offer.location !== 'Non précisée') {
+            this.locations.add(offer.location);
+          }
         });
         
         this.populateLocationFilter();
@@ -524,13 +525,13 @@
       this.filteredOffers = this.allOffers.filter(offer => {
         const matchesSearch = !searchQuery || offer.title.toLowerCase().includes(searchQuery);
         const matchesContract = !contractFilter || offer.title.includes(contractFilter);
-        const matchesLocation = !locationFilter || offer.title.includes(locationFilter);
+        const matchesLocation = !locationFilter || (offer.location && offer.location.includes(locationFilter));
         
         let matchesDate = true;
         if (dateFilter === 'today') {
-          matchesDate = offer.pubDate.includes('NEW') || offer.pubDate.includes(new Date().getDate());
+          matchesDate = offer.pubDate.includes('NEW');
         } else if (dateFilter === 'week') {
-          matchesDate = offer.pubDate.includes('NEW') || offer.pubDate.includes('Octobre');
+          matchesDate = offer.pubDate.includes('NEW') || offer.pubDate.includes('Octobre') || offer.pubDate.includes('Novembre');
         }
         
         return matchesSearch && matchesContract && matchesLocation && matchesDate;
@@ -667,8 +668,8 @@
     }
     
     extractLocation(title) {
-      const match = title.match(/\(([^)]+)\)$/);
-      return match ? match[1] : 'Non précisée';
+      // Cette fonction n'est plus utilisée car la localisation vient de l'API
+      return 'Non précisée';
     }
   }
   
