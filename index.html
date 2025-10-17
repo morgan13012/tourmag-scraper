@@ -471,9 +471,8 @@
         
         // Extraire les localisations uniques
         allOffers.forEach(offer => {
-          const locationMatch = offer.title.match(/\(([^)]+)\)$/);
-          if (locationMatch) {
-            locations.add(locationMatch[1]);
+          if (offer.location && offer.location !== 'Non précisée') {
+            locations.add(offer.location);
           }
         });
         
@@ -557,8 +556,8 @@
     }
 
     function extractLocation(title) {
-      const match = title.match(/\(([^)]+)\)$/);
-      return match ? match[1] : 'Non précisée';
+      // Cette fonction n'est plus utilisée car la localisation vient de l'API
+      return 'Non précisée';
     }
 
     function renderOffers(offers) {
@@ -575,7 +574,7 @@
         div.className = "offer";
         
         const contractType = extractContractType(o.title);
-        const location = extractLocation(o.title);
+        const location = o.location || 'Non précisée';
         const isNew = isRecent(o.pubDate);
         
         div.innerHTML = `
