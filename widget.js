@@ -380,7 +380,7 @@
 
             <div class="tmg-filters">
               <div class="tmg-filter-group">
-                <label>📝 Type de contrat</label>
+                <label>📋 Type de contrat</label>
                 <select id="tmg-filter-contract">
                   <option value="">Tous les contrats</option>
                   <option value="CDI">CDI</option>
@@ -453,10 +453,11 @@
         
         this.allOffers = data.offers;
         
-        // Extraire localisations
+        // MODIFICATION ICI : Extraire localisations depuis le champ location de l'API
         this.allOffers.forEach(offer => {
-          const locationMatch = offer.title.match(/\(([^)]+)\)$/);
-          if (locationMatch) this.locations.add(locationMatch[1]);
+          if (offer.location) {
+            this.locations.add(offer.location);
+          }
         });
         
         this.populateLocationFilter();
@@ -524,7 +525,8 @@
       this.filteredOffers = this.allOffers.filter(offer => {
         const matchesSearch = !searchQuery || offer.title.toLowerCase().includes(searchQuery);
         const matchesContract = !contractFilter || offer.title.includes(contractFilter);
-        const matchesLocation = !locationFilter || offer.title.includes(locationFilter);
+        // MODIFICATION ICI : Utiliser le champ location au lieu du titre
+        const matchesLocation = !locationFilter || offer.location === locationFilter;
         
         let matchesDate = true;
         if (dateFilter === 'today') {
@@ -630,7 +632,8 @@
       resultsEl.innerHTML = offers.map(offer => {
         const isNew = offer.pubDate.includes('NEW');
         const contractType = this.extractContractType(offer.title);
-        const location = this.extractLocation(offer.title);
+        // MODIFICATION ICI : Utiliser le champ location au lieu d'extraire du titre
+        const location = offer.location || 'Non précisée';
         
         return `
           <div class="tmg-offer">
@@ -640,7 +643,7 @@
             </a>
             <div class="tmg-offer-meta">
               <div class="tmg-offer-meta-item">
-                <span>📝</span>
+                <span>📋</span>
                 <span><strong>Type :</strong> ${contractType}</span>
               </div>
               <div class="tmg-offer-meta-item">
@@ -664,11 +667,6 @@
       if (title.includes('Alternance')) return 'Alternance';
       if (title.includes('Freelance')) return 'Freelance';
       return 'Non précisé';
-    }
-    
-    extractLocation(title) {
-      const match = title.match(/\(([^)]+)\)$/);
-      return match ? match[1] : 'Non précisée';
     }
   }
   
