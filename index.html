@@ -1,121 +1,691 @@
-import { parse } from 'node-html-parser';
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moteur de recherche des offres d'emploi TourMaG</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
-  
-  try {
-    const BASE_URL = 'https://www.tourmag.com/welcometothetravel/';
-    const allOffers = [];
-    const maxPages = 30; // Charger jusqu'à 30 pages (300 offres)
-    
-    // Charger toutes les pages en parallèle pour plus de rapidité
-    const pagesToFetch = Array.from({ length: maxPages }, (_, i) => i);
-    
-    const fetchPromises = pagesToFetch.map(async (pageNum) => {
-      const start = pageNum * 10;
-      const url = pageNum === 0 ? BASE_URL : `${BASE_URL}?start=${start}`;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Roboto", "Helvetica Neue", Arial, sans-serif;
+      background: #f8f9fa;
+      color: #222;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .header {
+      display: none;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .search-section {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 2rem;
+      border: 1px solid #e8e8e8;
+    }
+
+    .search-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 1rem 1rem 1rem 3rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 1.2rem;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .filter-group label {
+      font-weight: 600;
+      color: #555;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-group select {
+      padding: 0.8rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-group select:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #555;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .stats-bar {
+      background: white;
+      border-radius: 10px;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      border: 1px solid #e8e8e8;
+    }
+
+    .stats-count {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .sort-options {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .sort-options label {
+      font-weight: 600;
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    .sort-options select {
+      padding: 0.5rem 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    #results {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .offer {
+      background: white;
+      border-radius: 10px;
+      padding: 1.8rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+      border-left: 4px solid #3498db;
+      position: relative;
+      border: 1px solid #e8e8e8;
+      border-left-width: 4px;
+    }
+
+    .offer:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      border-left-color: #2980b9;
+    }
+
+    .offer-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+      color: white;
+      padding: 0.4rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+    }
+
+    .offer-title {
+      font-family: "Segoe UI", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 600;
+      font-size: 1.15rem;
+      color: #1a202c;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+      padding-right: 5rem;
+      transition: color 0.2s ease;
+    }
+
+    .offer-title:hover {
+      color: #2563eb;
+    }
+
+    .offer-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.8rem;
+      margin-top: 1.2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #f0f0f0;
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    .offer-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .offer-meta-item strong {
+      color: #495057;
+      font-weight: 600;
+    }
+
+    .loading-container {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+    }
+
+    .empty-state p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .error {
+      background: #ffe6e6;
+      border: 2px solid #ff4444;
+      color: #cc0000;
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .highlight {
+      background: #fff3cd;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .last-update {
+      text-align: center;
+      color: #999;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.8rem;
+      }
+
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .offer {
+        padding: 1.2rem;
+      }
+
+      .offer-title {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Recherche d'offres d'emploi</h1>
+    <p>Trouvez votre prochain poste dans le secteur du tourisme</p>
+  </div>
+
+  <div class="container">
+    <div class="search-section">
+      <div class="search-title">
+        🎯 Rechercher une offre
+      </div>
+
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search" placeholder="Intitulé du poste, entreprise, mots-clés...">
+      </div>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label>📋 Type de contrat</label>
+          <select id="filterContract">
+            <option value="">Tous les contrats</option>
+            <option value="CDI">CDI</option>
+            <option value="CDD">CDD</option>
+            <option value="Stage">Stage</option>
+            <option value="Alternance">Alternance</option>
+            <option value="Freelance">Freelance</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>📍 Localisation</label>
+          <select id="filterLocation">
+            <option value="">Toutes les régions</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>📅 Date de publication</label>
+          <select id="filterDate">
+            <option value="">Toutes les dates</option>
+            <option value="today">Aujourd'hui</option>
+            <option value="week">Cette semaine</option>
+            <option value="month">Ce mois</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-secondary" onclick="clearFilters()">🔄 Réinitialiser les filtres</button>
+      </div>
+    </div>
+
+    <div class="stats-bar" id="statsBar" style="display: none;">
+      <div class="stats-count" id="stats"></div>
+      <div class="sort-options">
+        <label>Trier par :</label>
+        <select id="sortBy" onchange="applySorting()">
+          <option value="date">Plus récent</option>
+          <option value="alpha">Alphabétique</option>
+        </select>
+      </div>
+    </div>
+    <div class="last-update" id="lastUpdate" style="display: none;"></div>
+
+    <div id="loading" class="loading-container">
+      <div class="spinner"></div>
+      <div class="loading-text">Chargement des offres d'emploi...</div>
+      <p style="color: #999; margin-top: 0.5rem;">Veuillez patienter quelques secondes</p>
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <script>
+    let allOffers = [];
+    let filteredOffers = [];
+    let locations = new Set();
+
+    async function fetchOffers() {
+      const loadingEl = document.getElementById('loading');
+      const resultsEl = document.getElementById('results');
+      
+      loadingEl.style.display = 'block';
+      resultsEl.innerHTML = '';
       
       try {
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
-          }
-        });
+        const API_URL = 'https://tourmag-scraper.vercel.app/api/scrape';
         
-        if (!response.ok) return [];
+        const response = await fetch(API_URL);
         
-        const html = await response.text();
-        const root = parse(html);
-        
-        // Cibler uniquement les offres dans le bloc avec l'ID spécifique
-        const offerBlock = root.querySelector('#mod_38716852');
-        if (!offerBlock) return [];
-        
-        const offerElements = offerBlock.querySelectorAll('div.cel1');
-        const pageOffers = [];
-        
-        offerElements.forEach(element => {
-          const descBlock = element.querySelector('.desc');
-          if (!descBlock) return;
-          
-          const link = descBlock.querySelector('.titre a');
-          
-          if (link) {
-            const href = link.getAttribute('href');
-            const title = link.text.trim();
-            
-            if (href && title) {
-              let fullUrl = href;
-              if (!href.startsWith('http')) {
-                fullUrl = href.startsWith('/') 
-                  ? `https://www.tourmag.com${href}` 
-                  : `https://www.tourmag.com/${href}`;
-              }
-              
-              // Extraction de la date
-              let date = '';
-              const dateElement = element.querySelector('.date_new');
-              if (dateElement) {
-                date = dateElement.text.trim();
-              }
-              
-              // Extraction de la localisation depuis le 3ème div.description
-              let location = 'Non précisée';
-              const descriptionDivs = descBlock.querySelectorAll('.description');
-              if (descriptionDivs.length >= 2) {
-                // Le 3ème div.description (index 1 après .reference) contient la localisation
-                const locationElement = descriptionDivs[1];
-                if (locationElement) {
-                  location = locationElement.text.trim();
-                }
-              }
-              
-              pageOffers.push({
-                title: title,
-                link: fullUrl,
-                location: location,
-                description: '',
-                pubDate: date || 'Non précisée'
-              });
-            }
-          }
-        });
-        
-        return pageOffers;
-      } catch (error) {
-        console.error(`Erreur page ${pageNum}:`, error);
-        return [];
-      }
-    });
-    
-    const results = await Promise.all(fetchPromises);
-    
-    // Fusionner tous les résultats et dédupliquer
-    results.forEach(pageOffers => {
-      pageOffers.forEach(offer => {
-        if (!allOffers.find(o => o.link === offer.link)) {
-          allOffers.push(offer);
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Erreur inconnue');
+        }
+        
+        allOffers = data.offers;
+        
+        // Extraire les localisations uniques depuis le champ location
+        allOffers.forEach(offer => {
+          if (offer.location) {
+            locations.add(offer.location);
+          }
+        });
+        
+        // Remplir le select des localisations
+        populateLocationFilter();
+        
+        loadingEl.style.display = 'none';
+        document.getElementById('statsBar').style.display = 'flex';
+        updateLastRefreshTime();
+        
+        if (allOffers.length === 0) {
+          showEmptyState('Aucune offre disponible', 'Revenez plus tard pour voir les nouvelles offres.');
+        } else {
+          showEmptyState('Utilisez les filtres ci-dessus', 'Recherchez par mot-clé, type de contrat, localisation ou date pour trouver votre offre idéale.');
+          updateStats(0, allOffers.length);
+        }
+        
+      } catch (error) {
+        console.error('Erreur:', error);
+        loadingEl.style.display = 'none';
+        resultsEl.innerHTML = `
+          <div class="error">
+            <strong>❌ Erreur de chargement</strong><br><br>
+            ${error.message}<br><br>
+            <button class="btn btn-primary" onclick="fetchOffers()">Réessayer</button>
+          </div>
+        `;
+      }
+    }
+
+    function populateLocationFilter() {
+      const select = document.getElementById('filterLocation');
+      const sortedLocations = Array.from(locations).sort();
+      
+      sortedLocations.forEach(loc => {
+        const option = document.createElement('option');
+        option.value = loc;
+        option.textContent = loc;
+        select.appendChild(option);
       });
-    });
+    }
+
+    function updateStats(filtered, total) {
+      const statsEl = document.getElementById('stats');
+      if (filtered === 0 && total > 0) {
+        statsEl.innerHTML = `📊 <strong>${total}</strong> offres disponibles`;
+      } else {
+        statsEl.innerHTML = `📊 <strong>${filtered}</strong> offre(s) trouvée(s) sur <strong>${total}</strong>`;
+      }
+    }
+
+    function showEmptyState(title, message) {
+      const resultsEl = document.getElementById('results');
+      resultsEl.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <h3>${title}</h3>
+          <p>${message}</p>
+        </div>
+      `;
+    }
+
+    function highlightText(text, query) {
+      if (!query) return text;
+      const regex = new RegExp(`(${query})`, 'gi');
+      return text.replace(regex, '<span class="highlight">$1</span>');
+    }
+
+    function isRecent(dateStr) {
+      // Vérifier si "NEW" ou date récente
+      return dateStr.includes('NEW');
+    }
+
+    function extractContractType(title) {
+      if (title.includes('CDI')) return 'CDI';
+      if (title.includes('CDD')) return 'CDD';
+      if (title.includes('Stage')) return 'Stage';
+      if (title.includes('Alternance')) return 'Alternance';
+      if (title.includes('Freelance')) return 'Freelance';
+      return 'Non précisé';
+    }
+
+    function renderOffers(offers) {
+      const results = document.getElementById('results');
+      results.innerHTML = '';
+
+      if (offers.length === 0) {
+        showEmptyState('Aucune offre trouvée', 'Essayez de modifier vos critères de recherche.');
+        return;
+      }
+
+      offers.forEach(o => {
+        const div = document.createElement("div");
+        div.className = "offer";
+        
+        const contractType = extractContractType(o.title);
+        const location = o.location || 'Non précisée';
+        const isNew = isRecent(o.pubDate);
+        
+        div.innerHTML = `
+          ${isNew ? '<div class="offer-badge">NOUVEAU</div>' : ''}
+          <a href="${o.link}" target="_blank" rel="noopener noreferrer" class="offer-title">${o.title}</a>
+          <div class="offer-meta">
+            <div class="offer-meta-item">
+              <span>📋</span>
+              <span><strong>Type :</strong> ${contractType}</span>
+            </div>
+            <div class="offer-meta-item">
+              <span>📍</span>
+              <span><strong>Lieu :</strong> ${location}</span>
+            </div>
+            <div class="offer-meta-item">
+              <span>📅</span>
+              <span><strong>Publié :</strong> ${o.pubDate}</span>
+            </div>
+          </div>
+        `;
+        results.appendChild(div);
+      });
+    }
+
+    function applyFilters() {
+      const searchQuery = document.getElementById('search').value.toLowerCase().trim();
+      const contractFilter = document.getElementById('filterContract').value;
+      const locationFilter = document.getElementById('filterLocation').value;
+      const dateFilter = document.getElementById('filterDate').value;
+
+      filteredOffers = allOffers.filter(offer => {
+        // Filtre recherche
+        const matchesSearch = !searchQuery || offer.title.toLowerCase().includes(searchQuery);
+        
+        // Filtre contrat
+        const matchesContract = !contractFilter || offer.title.includes(contractFilter);
+        
+        // Filtre localisation (utilise maintenant le champ location)
+        const matchesLocation = !locationFilter || offer.location === locationFilter;
+        
+        // Filtre date (simplifié - peut être amélioré)
+        let matchesDate = true;
+        if (dateFilter === 'today') {
+          matchesDate = offer.pubDate.includes('NEW') || offer.pubDate.includes(new Date().getDate());
+        } else if (dateFilter === 'week') {
+          matchesDate = offer.pubDate.includes('NEW') || offer.pubDate.includes('Octobre');
+        }
+        
+        return matchesSearch && matchesContract && matchesLocation && matchesDate;
+      });
+
+      applySorting();
+      updateStats(filteredOffers.length, allOffers.length);
+      
+      if (searchQuery || contractFilter || locationFilter || dateFilter) {
+        renderOffers(filteredOffers);
+      } else {
+        showEmptyState('Utilisez les filtres ci-dessus', 'Recherchez par mot-clé, type de contrat, localisation ou date pour trouver votre offre idéale.');
+      }
+    }
+
+    function applySorting() {
+      const sortBy = document.getElementById('sortBy').value;
+      
+      if (sortBy === 'alpha') {
+        filteredOffers.sort((a, b) => a.title.localeCompare(b.title));
+      } else if (sortBy === 'date') {
+        filteredOffers.sort((a, b) => {
+          const aIsNew = a.pubDate.includes('NEW');
+          const bIsNew = b.pubDate.includes('NEW');
+          if (aIsNew && !bIsNew) return -1;
+          if (!aIsNew && bIsNew) return 1;
+          return 0;
+        });
+      }
+      
+      if (filteredOffers.length > 0) {
+        renderOffers(filteredOffers);
+      }
+    }
+
+    function clearFilters() {
+      document.getElementById('search').value = '';
+      document.getElementById('filterContract').value = '';
+      document.getElementById('filterLocation').value = '';
+      document.getElementById('filterDate').value = '';
+      document.getElementById('sortBy').value = 'date';
+      
+      filteredOffers = [];
+      updateStats(0, allOffers.length);
+      showEmptyState('Filtres réinitialisés', 'Utilisez les filtres ci-dessus pour rechercher des offres.');
+    }
+
+    // Event listeners
+    document.getElementById('search').addEventListener('input', applyFilters);
+    document.getElementById('filterContract').addEventListener('change', applyFilters);
+    document.getElementById('filterLocation').addEventListener('change', applyFilters);
+    document.getElementById('filterDate').addEventListener('change', applyFilters);
+
+    // Initialisation
+    fetchOffers();
     
-    console.log(`Total: ${allOffers.length} offres récupérées`);
+    // Auto-refresh toutes les 30 minutes
+    setInterval(() => {
+      console.log('Auto-refresh : rechargement des offres...');
+      fetchOffers();
+    }, 30 * 60 * 1000); // 30 minutes en millisecondes
     
-    res.status(200).json({
-      success: true,
-      total: allOffers.length,
-      offers: allOffers,
-      scrapedAt: new Date().toISOString()
-    });
-    
-  } catch (error) {
-    console.error('Erreur scraping:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-}
+    // Afficher l'heure de la dernière mise à jour
+    function updateLastRefreshTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      const lastUpdateEl = document.getElementById('lastUpdate');
+      lastUpdateEl.textContent = `Dernière actualisation : ${timeString}`;
+      lastUpdateEl.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
