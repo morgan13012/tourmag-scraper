@@ -62,13 +62,13 @@ export default async function handler(req, res) {
                 date = dateElement.text.trim();
               }
               
-              // Extraction de la localisation depuis le 3ème div.description
+              // Extraction de la localisation depuis le dernier div.description
               let location = 'Non précisée';
               const descriptionDivs = descBlock.querySelectorAll('.description');
-              if (descriptionDivs.length >= 2) {
-                // Le 3ème div.description (index 1 après .reference) contient la localisation
-                const locationElement = descriptionDivs[1];
-                if (locationElement) {
+              // Le dernier div.description contient la localisation (ex: "75 Paris")
+              if (descriptionDivs.length > 1) {
+                const locationElement = descriptionDivs[descriptionDivs.length - 1];
+                if (locationElement && !locationElement.querySelector('.reference')) {
                   location = locationElement.text.trim();
                 }
               }
