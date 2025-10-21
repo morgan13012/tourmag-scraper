@@ -38,7 +38,10 @@ export default async function handler(req, res) {
         const pageOffers = [];
         
         offerElements.forEach(element => {
-          const link = element.querySelector('a');
+          const descBlock = element.querySelector('.desc');
+          if (!descBlock) return;
+          
+          const link = descBlock.querySelector('.titre a');
           
           if (link) {
             const href = link.getAttribute('href');
@@ -52,18 +55,28 @@ export default async function handler(req, res) {
                   : `https://www.tourmag.com/${href}`;
               }
               
+              // Extraction de la date
               let date = '';
-              const parentElement = element.parentNode;
-              if (parentElement) {
-                const dateElement = parentElement.querySelector('.date, .cel2, [class*="date"]');
-                if (dateElement) {
-                  date = dateElement.text.trim();
+              const dateElement = element.querySelector('.date_new');
+              if (dateElement) {
+                date = dateElement.text.trim();
+              }
+              
+              // Extraction de la localisation depuis le 3ème div.description
+              let location = 'Non précisée';
+              const descriptionDivs = descBlock.querySelectorAll('.description');
+              if (descriptionDivs.length >= 2) {
+                // Le 3ème div.description (index 1 après .reference) contient la localisation
+                const locationElement = descriptionDivs[1];
+                if (locationElement) {
+                  location = locationElement.text.trim();
                 }
               }
               
               pageOffers.push({
                 title: title,
                 link: fullUrl,
+                location: location,
                 description: '',
                 pubDate: date || 'Non précisée'
               });
