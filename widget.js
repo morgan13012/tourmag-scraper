@@ -439,7 +439,7 @@
               <div class="tmg-filter-group">
                 <label>📍 Localisation</label>
                 <select id="tmg-filter-location">
-                  <option value="">Toutes les régions</option>
+                  <option value="">Toutes les localisations</option>
                 </select>
               </div>
 
