@@ -537,10 +537,11 @@
       }
 
       if (filter === 'month') {
-        // Ce mois : mois en cours
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        return offerDate.getMonth() === currentMonth && offerDate.getFullYear() === currentYear;
+        // Ce mois : 30 derniers jours
+        const monthAgo = new Date();
+        monthAgo.setDate(monthAgo.getDate() - 30);
+        monthAgo.setHours(0, 0, 0, 0);
+        return offerDate.getTime() >= monthAgo.getTime();
       }
 
       return true;
