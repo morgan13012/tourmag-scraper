@@ -282,7 +282,7 @@
       width: 50px;
       height: 50px;
       animation: spin 1s linear infinite;
-      margin: 0 auto 1rem;
+      margin: 0 auto 1.5rem;
     }
 
     @keyframes spin {
@@ -291,8 +291,18 @@
     }
 
     .loading-text {
-      color: #666;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
+      color: #555;
+      font-weight: 600;
+    }
+
+    .error {
+      background: #fff3f3;
+      border: 2px solid #ffcdd2;
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      color: #c62828;
     }
 
     .empty-state {
@@ -300,92 +310,83 @@
       padding: 4rem 2rem;
       background: white;
       border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border: 2px dashed #e0e0e0;
     }
 
     .empty-state-icon {
       font-size: 4rem;
       margin-bottom: 1rem;
+      opacity: 0.5;
     }
 
     .empty-state h3 {
-      color: #333;
+      font-size: 1.4rem;
+      color: #2c3e50;
       margin-bottom: 0.5rem;
-      font-size: 1.5rem;
     }
 
     .empty-state p {
-      color: #666;
-      font-size: 1.1rem;
-    }
-
-    .error {
-      background: #ffe6e6;
-      border: 2px solid #ff4444;
-      color: #cc0000;
-      padding: 1.5rem;
-      border-radius: 12px;
-      text-align: center;
+      color: #7f8c8d;
+      font-size: 1rem;
     }
 
     .highlight {
-      background: #fff3cd;
-      padding: 0.1rem 0.3rem;
-      border-radius: 3px;
+      background-color: #fff59d;
       font-weight: 600;
+      padding: 0 2px;
+      border-radius: 2px;
     }
 
     .last-update {
       text-align: center;
       color: #999;
       font-size: 0.85rem;
-      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e8e8e8;
     }
 
     @media (max-width: 768px) {
-      .header h1 {
-        font-size: 1.8rem;
+      .container {
+        padding: 1rem;
       }
-
+      
+      .search-section {
+        padding: 1.5rem;
+      }
+      
       .filters {
         grid-template-columns: 1fr;
       }
-
+      
       .stats-bar {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
       }
-
-      .offer {
-        padding: 1.2rem;
-      }
-
-      .offer-title {
-        font-size: 1.1rem;
+      
+      .sort-options {
+        justify-content: space-between;
       }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Recherche d'offres d'emploi</h1>
-    <p>Trouvez votre prochain poste dans le secteur du tourisme</p>
-  </div>
-
   <div class="container">
     <div class="search-section">
       <div class="search-title">
-        🎯 Rechercher une offre
+        🔍 Rechercher une offre d'emploi
       </div>
-
+      
       <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="search" placeholder="Intitulé du poste, entreprise, mots-clés...">
+        <span class="search-icon">🔎</span>
+        <input type="text" id="search" placeholder="Rechercher par mot-clé (ex: développeur, commercial, Paris...)">
       </div>
 
       <div class="filters">
         <div class="filter-group">
-          <label>📋 Type de contrat</label>
+          <label for="filterContract">Type de contrat</label>
           <select id="filterContract">
             <option value="">Tous les contrats</option>
             <option value="CDI">CDI</option>
@@ -397,14 +398,14 @@
         </div>
 
         <div class="filter-group">
-          <label>📍 Localisation</label>
+          <label for="filterLocation">Localisation</label>
           <select id="filterLocation">
-            <option value="">Toutes les régions</option>
+            <option value="">Toutes les localisations</option>
           </select>
         </div>
 
         <div class="filter-group">
-          <label>📅 Date de publication</label>
+          <label for="filterDate">Date de publication</label>
           <select id="filterDate">
             <option value="">Toutes les dates</option>
             <option value="today">Aujourd'hui</option>
@@ -415,7 +416,8 @@
       </div>
 
       <div class="filter-actions">
-        <button class="btn btn-secondary" onclick="clearFilters()">🔄 Réinitialiser les filtres</button>
+        <button class="btn btn-primary" onclick="applyFilters()">🔍 Rechercher</button>
+        <button class="btn btn-secondary" onclick="clearFilters()">🔄 Réinitialiser</button>
       </div>
     </div>
 
@@ -444,6 +446,118 @@
     let allOffers = [];
     let filteredOffers = [];
     let locations = new Set();
+
+    // Mapping des mois français vers leur numéro (0-11 pour JavaScript Date)
+    const FRENCH_MONTHS = {
+      'janvier': 0,
+      'février': 1,
+      'fevrier': 1,
+      'mars': 2,
+      'avril': 3,
+      'mai': 4,
+      'juin': 5,
+      'juillet': 6,
+      'août': 7,
+      'aout': 7,
+      'septembre': 8,
+      'octobre': 9,
+      'novembre': 10,
+      'décembre': 11,
+      'decembre': 11
+    };
+
+    /**
+     * Parse une date française (ex: "14 Octobre") et retourne un objet Date
+     * Assume l'année courante, sauf si la date est dans le futur (alors année précédente)
+     */
+    function parseFrenchDate(dateStr) {
+      // Si c'est "NEW", c'est aujourd'hui
+      if (dateStr.includes('NEW')) {
+        return new Date();
+      }
+
+      // Parse "14 Octobre"
+      const match = dateStr.match(/(\d+)\s+(\w+)/i);
+      if (!match) {
+        return null;
+      }
+
+      const day = parseInt(match[1], 10);
+      const monthName = match[2].toLowerCase();
+      const monthIndex = FRENCH_MONTHS[monthName];
+
+      if (monthIndex === undefined) {
+        return null;
+      }
+
+      const now = new Date();
+      let year = now.getFullYear();
+
+      // Créer la date avec l'année courante
+      let date = new Date(year, monthIndex, day);
+
+      // Si la date est dans le futur, c'est l'année précédente
+      if (date > now) {
+        date.setFullYear(year - 1);
+      }
+
+      return date;
+    }
+
+    /**
+     * Vérifie si une date correspond au filtre sélectionné
+     */
+    function matchesDateFilter(dateStr, filter) {
+      if (!filter) return true;
+
+      const offerDate = parseFrenchDate(dateStr);
+      if (!offerDate) return false;
+
+      const now = new Date();
+      now.setHours(0, 0, 0, 0); // Début de la journée
+
+      // Les offres "NEW" passent toujours tous les filtres
+      if (dateStr.includes('NEW')) {
+        return true;
+      }
+
+      if (filter === 'today') {
+        // Aujourd'hui : même jour
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return offerDate.getTime() >= today.getTime();
+      }
+
+      if (filter === 'week') {
+        // Cette semaine : 7 derniers jours
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        weekAgo.setHours(0, 0, 0, 0);
+        return offerDate.getTime() >= weekAgo.getTime();
+      }
+
+      if (filter === 'month') {
+        // Ce mois : mois en cours
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        return offerDate.getMonth() === currentMonth && offerDate.getFullYear() === currentYear;
+      }
+
+      return true;
+    }
+
+    /**
+     * Calcule le nombre de jours entre une date et aujourd'hui
+     */
+    function getDaysAgo(dateStr) {
+      const offerDate = parseFrenchDate(dateStr);
+      if (!offerDate) return Infinity;
+
+      const now = new Date();
+      const diffTime = now - offerDate;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays;
+    }
 
     async function fetchOffers() {
       const loadingEl = document.getElementById('loading');
@@ -610,13 +724,8 @@
         // Filtre localisation (utilise maintenant le champ location)
         const matchesLocation = !locationFilter || offer.location === locationFilter;
         
-        // Filtre date (simplifié - peut être amélioré)
-        let matchesDate = true;
-        if (dateFilter === 'today') {
-          matchesDate = offer.pubDate.includes('NEW') || offer.pubDate.includes(new Date().getDate());
-        } else if (dateFilter === 'week') {
-          matchesDate = offer.pubDate.includes('NEW') || offer.pubDate.includes('Octobre');
-        }
+        // Filtre date - NOUVEAU SYSTÈME INTELLIGENT
+        const matchesDate = matchesDateFilter(offer.pubDate, dateFilter);
         
         return matchesSearch && matchesContract && matchesLocation && matchesDate;
       });
@@ -638,11 +747,21 @@
         filteredOffers.sort((a, b) => a.title.localeCompare(b.title));
       } else if (sortBy === 'date') {
         filteredOffers.sort((a, b) => {
+          // Les "NEW" en premier
           const aIsNew = a.pubDate.includes('NEW');
           const bIsNew = b.pubDate.includes('NEW');
           if (aIsNew && !bIsNew) return -1;
           if (!aIsNew && bIsNew) return 1;
-          return 0;
+          
+          // Sinon, trier par date parsée (plus récent en premier)
+          const aDate = parseFrenchDate(a.pubDate);
+          const bDate = parseFrenchDate(b.pubDate);
+          
+          if (!aDate && !bDate) return 0;
+          if (!aDate) return 1;
+          if (!bDate) return -1;
+          
+          return bDate - aDate; // Plus récent en premier
         });
       }
       
