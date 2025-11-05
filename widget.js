@@ -343,22 +343,22 @@
   styleSheet.textContent = WIDGET_CONFIG.styles;
   document.head.appendChild(styleSheet);
   
-  // Mapping des mois franÃ§ais
+  // Mapping des mois français
   const FRENCH_MONTHS = {
     'janvier': 0,
-    'fÃ©vrier': 1,
+    'février': 1,
     'fevrier': 1,
     'mars': 2,
     'avril': 3,
     'mai': 4,
     'juin': 5,
     'juillet': 6,
-    'aoÃ»t': 7,
+    'août': 7,
     'aout': 7,
     'septembre': 8,
     'octobre': 9,
     'novembre': 10,
-    'dÃ©cembre': 11,
+    'décembre': 11,
     'decembre': 11
   };
   
@@ -395,17 +395,17 @@
         <div class="tmg-widget-container">
           <div class="tmg-search-section">
             <div class="tmg-search-title">
-              ðŸ” Rechercher une offre
+              🔍 Rechercher une offre
             </div>
 
             <div class="tmg-search-box">
-              <span class="tmg-search-icon">ðŸ”Ž</span>
-              <input type="text" id="tmg-search" placeholder="IntitulÃ© du poste, entreprise, mots-clÃ©s...">
+              <span class="tmg-search-icon">🔎</span>
+              <input type="text" id="tmg-search" placeholder="Intitulé du poste, entreprise, mots-clés...">
             </div>
 
             <div class="tmg-filters">
               <div class="tmg-filter-group">
-                <label>ðŸ“‹ Type de contrat</label>
+                <label>📋 Type de contrat</label>
                 <select id="tmg-filter-contract">
                   <option value="">Tous les contrats</option>
                   <option value="CDI">CDI</option>
@@ -417,14 +417,14 @@
               </div>
 
               <div class="tmg-filter-group">
-                <label>ðŸ“ Localisation</label>
+                <label>📍 Localisation</label>
                 <select id="tmg-filter-location">
-                  <option value="">Toutes les rÃ©gions</option>
+                  <option value="">Toutes les régions</option>
                 </select>
               </div>
 
               <div class="tmg-filter-group">
-                <label>ðŸ“… Date de publication</label>
+                <label>📅 Date de publication</label>
                 <select id="tmg-filter-date">
                   <option value="">Toutes les dates</option>
                   <option value="today">Aujourd'hui</option>
@@ -435,7 +435,7 @@
             </div>
 
             <div class="tmg-filter-actions">
-              <button class="tmg-btn tmg-btn-secondary" onclick="window.tourmagWidget.clearFilters()">ðŸ”„ RÃ©initialiser les filtres</button>
+              <button class="tmg-btn tmg-btn-secondary" onclick="window.tourmagWidget.clearFilters()">🔄 Réinitialiser les filtres</button>
             </div>
           </div>
 
@@ -444,8 +444,8 @@
             <div class="tmg-sort-options">
               <label>Trier par :</label>
               <select id="tmg-sort-by" onchange="window.tourmagWidget.applySorting()">
-                <option value="date">Plus rÃ©cent</option>
-                <option value="alpha">AlphabÃ©tique</option>
+                <option value="date">Plus récent</option>
+                <option value="alpha">Alphabétique</option>
               </select>
             </div>
           </div>
@@ -463,7 +463,7 @@
     }
     
     /**
-     * Parse une date franÃ§aise (ex: "14 Octobre") et retourne un objet Date
+     * Parse une date française (ex: "14 Octobre") et retourne un objet Date
      */
     parseFrenchDate(dateStr) {
       if (dateStr.includes('NEW')) {
@@ -491,7 +491,7 @@
     }
     
     /**
-     * VÃ©rifie si une date correspond au filtre sÃ©lectionnÃ©
+     * Vérifie si une date correspond au filtre sélectionné
      */
     matchesDateFilter(dateStr, filter) {
       if (!filter) return true;
@@ -573,9 +573,9 @@
         if (resultsEl) {
           resultsEl.innerHTML = `
             <div class="tmg-error">
-              <strong>âŒ Erreur de chargement</strong><br><br>
+              <strong>❌ Erreur de chargement</strong><br><br>
               ${error.message}<br><br>
-              <button class="tmg-btn tmg-btn-primary" onclick="window.tourmagWidget.fetchOffers()">RÃ©essayer</button>
+              <button class="tmg-btn tmg-btn-primary" onclick="window.tourmagWidget.fetchOffers()">Réessayer</button>
             </div>
           `;
         }
@@ -686,9 +686,9 @@
       if (!statsEl) return;
       
       if (filtered === 0 && total > 0) {
-        statsEl.innerHTML = `ðŸ“Š <strong>${total}</strong> offres disponibles`;
+        statsEl.innerHTML = `📊 <strong>${total}</strong> offres disponibles`;
       } else {
-        statsEl.innerHTML = `ðŸ“Š <strong>${filtered}</strong> offre(s) trouvÃ©e(s) sur <strong>${total}</strong>`;
+        statsEl.innerHTML = `📊 <strong>${filtered}</strong> offre(s) trouvée(s) sur <strong>${total}</strong>`;
       }
     }
     
@@ -697,7 +697,7 @@
       const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
       const lastUpdateEl = document.getElementById('tmg-last-update');
       if (lastUpdateEl) {
-        lastUpdateEl.textContent = `DerniÃ¨re actualisation : ${timeString}`;
+        lastUpdateEl.textContent = `Dernière actualisation : ${timeString}`;
         lastUpdateEl.style.display = 'block';
       }
     }
@@ -708,7 +708,7 @@
       
       resultsEl.innerHTML = `
         <div class="tmg-empty-state">
-          <div class="tmg-empty-state-icon">ðŸ”</div>
+          <div class="tmg-empty-state-icon">🔍</div>
           <h3>${title}</h3>
           <p>${message}</p>
         </div>
@@ -720,14 +720,14 @@
       if (!resultsEl) return;
       
       if (offers.length === 0) {
-        this.showEmptyState('Aucune offre trouvÃ©e', 'Essayez de modifier vos critÃ¨res de recherche.');
+        this.showEmptyState('Aucune offre trouvée', 'Essayez de modifier vos critères de recherche.');
         return;
       }
       
       resultsEl.innerHTML = offers.map(offer => {
         const isNew = offer.pubDate.includes('NEW');
         const contractType = this.extractContractType(offer.title);
-        const location = offer.location || 'Non prÃ©cisÃ©e';
+        const location = offer.location || 'Non précisée';
         
         return `
           <div class="tmg-offer">
@@ -737,16 +737,16 @@
             </a>
             <div class="tmg-offer-meta">
               <div class="tmg-offer-meta-item">
-                <span>ðŸ“‹</span>
+                <span>📋</span>
                 <span><strong>Type :</strong> ${contractType}</span>
               </div>
               <div class="tmg-offer-meta-item">
-                <span>ðŸ“</span>
+                <span>📍</span>
                 <span><strong>Lieu :</strong> ${location}</span>
               </div>
               <div class="tmg-offer-meta-item">
-                <span>ðŸ“…</span>
-                <span><strong>PubliÃ© :</strong> ${offer.pubDate}</span>
+                <span>📅</span>
+                <span><strong>Publié :</strong> ${offer.pubDate}</span>
               </div>
             </div>
           </div>
@@ -760,11 +760,11 @@
       if (title.includes('Stage')) return 'Stage';
       if (title.includes('Alternance')) return 'Alternance';
       if (title.includes('Freelance')) return 'Freelance';
-      return 'Non prÃ©cisÃ©';
+      return 'Non précisé';
     }
   }
   
-  // Initialiser le widget quand le DOM est prÃªt
+  // Initialiser le widget quand le DOM est prêt
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       window.tourmagWidget = new TourMagJobsWidget(WIDGET_CONFIG.containerId);
