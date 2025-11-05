@@ -171,7 +171,11 @@
         text-align: center;
         color: #999;
         font-size: 0.85rem;
-        margin-top: 0.5rem;
+        margin-top: 1rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e8e8e8;
       }
       
       .tmg-results {
@@ -262,12 +266,7 @@
         width: 50px;
         height: 50px;
         animation: tmg-spin 1s linear infinite;
-        margin: 0 auto 1rem;
-      }
-      
-      .tmg-loading-text {
-        color: #666;
-        font-size: 1.1rem;
+        margin: 0 auto 1.5rem;
       }
       
       @keyframes tmg-spin {
@@ -275,28 +274,35 @@
         100% { transform: rotate(360deg); }
       }
       
+      .tmg-loading-text {
+        font-size: 1.2rem;
+        color: #555;
+        font-weight: 600;
+      }
+      
       .tmg-empty-state {
         text-align: center;
         padding: 4rem 2rem;
         background: white;
         border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 2px dashed #e0e0e0;
       }
       
       .tmg-empty-state-icon {
         font-size: 4rem;
         margin-bottom: 1rem;
+        opacity: 0.5;
       }
       
       .tmg-empty-state h3 {
-        color: #333;
+        font-size: 1.4rem;
+        color: #2c3e50;
         margin-bottom: 0.5rem;
-        font-size: 1.5rem;
       }
       
       .tmg-empty-state p {
-        color: #666;
-        font-size: 1.1rem;
+        color: #7f8c8d;
+        font-size: 1rem;
       }
       
       .tmg-error {
@@ -337,6 +343,25 @@
   styleSheet.textContent = WIDGET_CONFIG.styles;
   document.head.appendChild(styleSheet);
   
+  // Mapping des mois franÃ§ais
+  const FRENCH_MONTHS = {
+    'janvier': 0,
+    'fÃ©vrier': 1,
+    'fevrier': 1,
+    'mars': 2,
+    'avril': 3,
+    'mai': 4,
+    'juin': 5,
+    'juillet': 6,
+    'aoÃ»t': 7,
+    'aout': 7,
+    'septembre': 8,
+    'octobre': 9,
+    'novembre': 10,
+    'dÃ©cembre': 11,
+    'decembre': 11
+  };
+  
   // Classe principale du widget
   class TourMagJobsWidget {
     constructor(containerId) {
@@ -370,17 +395,17 @@
         <div class="tmg-widget-container">
           <div class="tmg-search-section">
             <div class="tmg-search-title">
-              🎯 Rechercher une offre
+              ðŸ” Rechercher une offre
             </div>
 
             <div class="tmg-search-box">
-              <span class="tmg-search-icon">🔍</span>
-              <input type="text" id="tmg-search" placeholder="Intitulé du poste, entreprise, mots-clés...">
+              <span class="tmg-search-icon">ðŸ”Ž</span>
+              <input type="text" id="tmg-search" placeholder="IntitulÃ© du poste, entreprise, mots-clÃ©s...">
             </div>
 
             <div class="tmg-filters">
               <div class="tmg-filter-group">
-                <label>📋 Type de contrat</label>
+                <label>ðŸ“‹ Type de contrat</label>
                 <select id="tmg-filter-contract">
                   <option value="">Tous les contrats</option>
                   <option value="CDI">CDI</option>
@@ -392,14 +417,14 @@
               </div>
 
               <div class="tmg-filter-group">
-                <label>📍 Localisation</label>
+                <label>ðŸ“ Localisation</label>
                 <select id="tmg-filter-location">
-                  <option value="">Toutes les régions</option>
+                  <option value="">Toutes les rÃ©gions</option>
                 </select>
               </div>
 
               <div class="tmg-filter-group">
-                <label>📅 Date de publication</label>
+                <label>ðŸ“… Date de publication</label>
                 <select id="tmg-filter-date">
                   <option value="">Toutes les dates</option>
                   <option value="today">Aujourd'hui</option>
@@ -410,7 +435,7 @@
             </div>
 
             <div class="tmg-filter-actions">
-              <button class="tmg-btn tmg-btn-secondary" onclick="window.tourmagWidget.clearFilters()">🔄 Réinitialiser les filtres</button>
+              <button class="tmg-btn tmg-btn-secondary" onclick="window.tourmagWidget.clearFilters()">ðŸ”„ RÃ©initialiser les filtres</button>
             </div>
           </div>
 
@@ -419,12 +444,11 @@
             <div class="tmg-sort-options">
               <label>Trier par :</label>
               <select id="tmg-sort-by" onchange="window.tourmagWidget.applySorting()">
-                <option value="date">Plus récent</option>
-                <option value="alpha">Alphabétique</option>
+                <option value="date">Plus rÃ©cent</option>
+                <option value="alpha">AlphabÃ©tique</option>
               </select>
             </div>
           </div>
-          <div class="tmg-last-update" id="tmg-last-update" style="display: none;"></div>
           
           <div id="tmg-loading" class="tmg-loading">
             <div class="tmg-spinner"></div>
@@ -433,8 +457,76 @@
           </div>
           
           <div id="tmg-results" class="tmg-results"></div>
+          <div class="tmg-last-update" id="tmg-last-update" style="display: none;"></div>
         </div>
       `;
+    }
+    
+    /**
+     * Parse une date franÃ§aise (ex: "14 Octobre") et retourne un objet Date
+     */
+    parseFrenchDate(dateStr) {
+      if (dateStr.includes('NEW')) {
+        return new Date();
+      }
+
+      const match = dateStr.match(/(\d+)\s+(\w+)/i);
+      if (!match) return null;
+
+      const day = parseInt(match[1], 10);
+      const monthName = match[2].toLowerCase();
+      const monthIndex = FRENCH_MONTHS[monthName];
+
+      if (monthIndex === undefined) return null;
+
+      const now = new Date();
+      let year = now.getFullYear();
+      let date = new Date(year, monthIndex, day);
+
+      if (date > now) {
+        date.setFullYear(year - 1);
+      }
+
+      return date;
+    }
+    
+    /**
+     * VÃ©rifie si une date correspond au filtre sÃ©lectionnÃ©
+     */
+    matchesDateFilter(dateStr, filter) {
+      if (!filter) return true;
+
+      const offerDate = this.parseFrenchDate(dateStr);
+      if (!offerDate) return false;
+
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      if (dateStr.includes('NEW')) {
+        return true;
+      }
+
+      if (filter === 'today') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return offerDate.getTime() >= today.getTime();
+      }
+
+      if (filter === 'week') {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        weekAgo.setHours(0, 0, 0, 0);
+        return offerDate.getTime() >= weekAgo.getTime();
+      }
+
+      if (filter === 'month') {
+        const monthAgo = new Date();
+        monthAgo.setDate(monthAgo.getDate() - 30);
+        monthAgo.setHours(0, 0, 0, 0);
+        return offerDate.getTime() >= monthAgo.getTime();
+      }
+
+      return true;
     }
     
     async fetchOffers() {
@@ -453,7 +545,6 @@
         
         this.allOffers = data.offers;
         
-        // MODIFICATION ICI : Extraire localisations depuis le champ location de l'API
         this.allOffers.forEach(offer => {
           if (offer.location) {
             this.locations.add(offer.location);
@@ -472,8 +563,8 @@
         if (this.allOffers.length === 0) {
           this.showEmptyState('Aucune offre disponible', 'Revenez plus tard pour voir les nouvelles offres.');
         } else {
-          this.showEmptyState('Utilisez les filtres ci-dessus', 'Recherchez par mot-clé, type de contrat, localisation ou date pour trouver votre offre idéale.');
           this.updateStats(0, this.allOffers.length);
+          if (resultsEl) resultsEl.innerHTML = '';
         }
         
       } catch (error) {
@@ -482,9 +573,9 @@
         if (resultsEl) {
           resultsEl.innerHTML = `
             <div class="tmg-error">
-              <strong>❌ Erreur de chargement</strong><br><br>
+              <strong>âŒ Erreur de chargement</strong><br><br>
               ${error.message}<br><br>
-              <button class="tmg-btn tmg-btn-primary" onclick="window.tourmagWidget.fetchOffers()">Réessayer</button>
+              <button class="tmg-btn tmg-btn-primary" onclick="window.tourmagWidget.fetchOffers()">RÃ©essayer</button>
             </div>
           `;
         }
@@ -525,15 +616,8 @@
       this.filteredOffers = this.allOffers.filter(offer => {
         const matchesSearch = !searchQuery || offer.title.toLowerCase().includes(searchQuery);
         const matchesContract = !contractFilter || offer.title.includes(contractFilter);
-        // MODIFICATION ICI : Utiliser le champ location au lieu du titre
         const matchesLocation = !locationFilter || offer.location === locationFilter;
-        
-        let matchesDate = true;
-        if (dateFilter === 'today') {
-          matchesDate = offer.pubDate.includes('NEW') || offer.pubDate.includes(new Date().getDate());
-        } else if (dateFilter === 'week') {
-          matchesDate = offer.pubDate.includes('NEW') || offer.pubDate.includes('Octobre');
-        }
+        const matchesDate = this.matchesDateFilter(offer.pubDate, dateFilter);
         
         return matchesSearch && matchesContract && matchesLocation && matchesDate;
       });
@@ -544,7 +628,8 @@
       if (searchQuery || contractFilter || locationFilter || dateFilter) {
         this.renderOffers(this.filteredOffers);
       } else {
-        this.showEmptyState('Utilisez les filtres ci-dessus', 'Recherchez par mot-clé, type de contrat, localisation ou date pour trouver votre offre idéale.');
+        const resultsEl = document.getElementById('tmg-results');
+        if (resultsEl) resultsEl.innerHTML = '';
       }
     }
     
@@ -559,7 +644,15 @@
           const bIsNew = b.pubDate.includes('NEW');
           if (aIsNew && !bIsNew) return -1;
           if (!aIsNew && bIsNew) return 1;
-          return 0;
+          
+          const aDate = this.parseFrenchDate(a.pubDate);
+          const bDate = this.parseFrenchDate(b.pubDate);
+          
+          if (!aDate && !bDate) return 0;
+          if (!aDate) return 1;
+          if (!bDate) return -1;
+          
+          return bDate - aDate;
         });
       }
       
@@ -583,7 +676,9 @@
       
       this.filteredOffers = [];
       this.updateStats(0, this.allOffers.length);
-      this.showEmptyState('Filtres réinitialisés', 'Utilisez les filtres ci-dessus pour rechercher des offres.');
+      
+      const resultsEl = document.getElementById('tmg-results');
+      if (resultsEl) resultsEl.innerHTML = '';
     }
     
     updateStats(filtered, total) {
@@ -591,9 +686,9 @@
       if (!statsEl) return;
       
       if (filtered === 0 && total > 0) {
-        statsEl.innerHTML = `📊 <strong>${total}</strong> offres disponibles`;
+        statsEl.innerHTML = `ðŸ“Š <strong>${total}</strong> offres disponibles`;
       } else {
-        statsEl.innerHTML = `📊 <strong>${filtered}</strong> offre(s) trouvée(s) sur <strong>${total}</strong>`;
+        statsEl.innerHTML = `ðŸ“Š <strong>${filtered}</strong> offre(s) trouvÃ©e(s) sur <strong>${total}</strong>`;
       }
     }
     
@@ -602,7 +697,7 @@
       const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
       const lastUpdateEl = document.getElementById('tmg-last-update');
       if (lastUpdateEl) {
-        lastUpdateEl.textContent = `Dernière actualisation : ${timeString}`;
+        lastUpdateEl.textContent = `DerniÃ¨re actualisation : ${timeString}`;
         lastUpdateEl.style.display = 'block';
       }
     }
@@ -613,7 +708,7 @@
       
       resultsEl.innerHTML = `
         <div class="tmg-empty-state">
-          <div class="tmg-empty-state-icon">🔍</div>
+          <div class="tmg-empty-state-icon">ðŸ”</div>
           <h3>${title}</h3>
           <p>${message}</p>
         </div>
@@ -625,15 +720,14 @@
       if (!resultsEl) return;
       
       if (offers.length === 0) {
-        this.showEmptyState('Aucune offre trouvée', 'Essayez de modifier vos critères de recherche.');
+        this.showEmptyState('Aucune offre trouvÃ©e', 'Essayez de modifier vos critÃ¨res de recherche.');
         return;
       }
       
       resultsEl.innerHTML = offers.map(offer => {
         const isNew = offer.pubDate.includes('NEW');
         const contractType = this.extractContractType(offer.title);
-        // MODIFICATION ICI : Utiliser le champ location au lieu d'extraire du titre
-        const location = offer.location || 'Non précisée';
+        const location = offer.location || 'Non prÃ©cisÃ©e';
         
         return `
           <div class="tmg-offer">
@@ -643,16 +737,16 @@
             </a>
             <div class="tmg-offer-meta">
               <div class="tmg-offer-meta-item">
-                <span>📋</span>
+                <span>ðŸ“‹</span>
                 <span><strong>Type :</strong> ${contractType}</span>
               </div>
               <div class="tmg-offer-meta-item">
-                <span>📍</span>
+                <span>ðŸ“</span>
                 <span><strong>Lieu :</strong> ${location}</span>
               </div>
               <div class="tmg-offer-meta-item">
-                <span>📅</span>
-                <span><strong>Publié :</strong> ${offer.pubDate}</span>
+                <span>ðŸ“…</span>
+                <span><strong>PubliÃ© :</strong> ${offer.pubDate}</span>
               </div>
             </div>
           </div>
@@ -666,11 +760,11 @@
       if (title.includes('Stage')) return 'Stage';
       if (title.includes('Alternance')) return 'Alternance';
       if (title.includes('Freelance')) return 'Freelance';
-      return 'Non précisé';
+      return 'Non prÃ©cisÃ©';
     }
   }
   
-  // Initialiser le widget quand le DOM est prêt
+  // Initialiser le widget quand le DOM est prÃªt
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       window.tourmagWidget = new TourMagJobsWidget(WIDGET_CONFIG.containerId);
