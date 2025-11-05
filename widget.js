@@ -8,7 +8,7 @@
     styles: `
       .tmg-widget-container {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Roboto", "Helvetica Neue", Arial, sans-serif;
-        background: #f8f9fa;
+        background: #ffffff;
         padding: 2rem 1rem;
       }
       
@@ -16,19 +16,47 @@
         background: white;
         border-radius: 12px;
         padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         margin-bottom: 2rem;
         border: 1px solid #e8e8e8;
+      }
+
+      .tmg-search-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.2rem;
+        border-bottom: 1px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 1rem;
       }
       
       .tmg-search-title {
         font-size: 1.3rem;
         font-weight: 600;
         color: #2c3e50;
-        margin-bottom: 1.5rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
+      }
+
+      .tmg-search-info {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+      }
+
+      .tmg-stats-count {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #2c3e50;
+      }
+
+      .tmg-last-update {
+        font-size: 0.85rem;
+        color: #999;
       }
       
       .tmg-search-box {
@@ -127,24 +155,13 @@
         background: #e0e0e0;
       }
       
-      .tmg-stats-bar {
-        background: white;
-        border-radius: 10px;
-        padding: 1.2rem 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      .tmg-sort-section {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
-        flex-wrap: wrap;
-        gap: 1rem;
-        border: 1px solid #e8e8e8;
-      }
-      
-      .tmg-stats-count {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #2c3e50;
+        padding-top: 1rem;
+        border-top: 1px solid #f0f0f0;
+        margin-top: 1rem;
       }
       
       .tmg-sort-options {
@@ -165,17 +182,6 @@
         border-radius: 6px;
         font-size: 0.95rem;
         cursor: pointer;
-      }
-      
-      .tmg-last-update {
-        text-align: center;
-        color: #999;
-        font-size: 0.85rem;
-        margin-top: 1rem;
-        padding: 0.5rem;
-        background: white;
-        border-radius: 8px;
-        border: 1px solid #e8e8e8;
       }
       
       .tmg-results {
@@ -321,12 +327,20 @@
         .tmg-search-section {
           padding: 1.2rem;
         }
+        .tmg-search-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .tmg-search-info {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
         .tmg-filters {
           grid-template-columns: 1fr;
         }
-        .tmg-stats-bar {
-          flex-direction: column;
-          align-items: flex-start;
+        .tmg-sort-section {
+          justify-content: flex-start;
         }
         .tmg-offer {
           padding: 1.2rem;
@@ -394,8 +408,14 @@
       this.container.innerHTML = `
         <div class="tmg-widget-container">
           <div class="tmg-search-section">
-            <div class="tmg-search-title">
-              🔍 Rechercher une offre
+            <div class="tmg-search-header">
+              <div class="tmg-search-title">
+                🔍 Rechercher une offre
+              </div>
+              <div class="tmg-search-info">
+                <div class="tmg-stats-count" id="tmg-stats"></div>
+                <div class="tmg-last-update" id="tmg-last-update"></div>
+              </div>
             </div>
 
             <div class="tmg-search-box">
@@ -428,8 +448,8 @@
                 <select id="tmg-filter-date">
                   <option value="">Toutes les dates</option>
                   <option value="today">Aujourd'hui</option>
-                  <option value="week">Cette semaine</option>
-                  <option value="month">Ce mois</option>
+                  <option value="week">7 derniers jours</option>
+                  <option value="month">30 derniers jours</option>
                 </select>
               </div>
             </div>
@@ -437,16 +457,15 @@
             <div class="tmg-filter-actions">
               <button class="tmg-btn tmg-btn-secondary" onclick="window.tourmagWidget.clearFilters()">🔄 Réinitialiser les filtres</button>
             </div>
-          </div>
 
-          <div class="tmg-stats-bar" id="tmg-stats-bar" style="display: none;">
-            <div class="tmg-stats-count" id="tmg-stats"></div>
-            <div class="tmg-sort-options">
-              <label>Trier par :</label>
-              <select id="tmg-sort-by" onchange="window.tourmagWidget.applySorting()">
-                <option value="date">Plus récent</option>
-                <option value="alpha">Alphabétique</option>
-              </select>
+            <div class="tmg-sort-section" id="tmg-sort-section" style="display: none;">
+              <div class="tmg-sort-options">
+                <label>Trier par :</label>
+                <select id="tmg-sort-by" onchange="window.tourmagWidget.applySorting()">
+                  <option value="date">Plus récent</option>
+                  <option value="alpha">Alphabétique</option>
+                </select>
+              </div>
             </div>
           </div>
           
@@ -457,7 +476,6 @@
           </div>
           
           <div id="tmg-results" class="tmg-results"></div>
-          <div class="tmg-last-update" id="tmg-last-update" style="display: none;"></div>
         </div>
       `;
     }
@@ -555,8 +573,8 @@
         
         if (loadingEl) loadingEl.style.display = 'none';
         
-        const statsBar = document.getElementById('tmg-stats-bar');
-        if (statsBar) statsBar.style.display = 'flex';
+        const sortSection = document.getElementById('tmg-sort-section');
+        if (sortSection) sortSection.style.display = 'flex';
         
         this.updateLastRefreshTime();
         
@@ -697,8 +715,7 @@
       const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
       const lastUpdateEl = document.getElementById('tmg-last-update');
       if (lastUpdateEl) {
-        lastUpdateEl.textContent = `Dernière actualisation : ${timeString}`;
-        lastUpdateEl.style.display = 'block';
+        lastUpdateEl.textContent = `Actualisé à ${timeString}`;
       }
     }
     
