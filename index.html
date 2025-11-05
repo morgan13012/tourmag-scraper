@@ -409,14 +409,13 @@
           <select id="filterDate">
             <option value="">Toutes les dates</option>
             <option value="today">Aujourd'hui</option>
-            <option value="week">Cette semaine</option>
-            <option value="month">Ce mois</option>
+            <option value="week">7 derniers jours</option>
+            <option value="month">30 derniers jours</option>
           </select>
         </div>
       </div>
 
       <div class="filter-actions">
-        <button class="btn btn-primary" onclick="applyFilters()">🔍 Rechercher</button>
         <button class="btn btn-secondary" onclick="clearFilters()">🔄 Réinitialiser</button>
       </div>
     </div>
@@ -431,7 +430,6 @@
         </select>
       </div>
     </div>
-    <div class="last-update" id="lastUpdate" style="display: none;"></div>
 
     <div id="loading" class="loading-container">
       <div class="spinner"></div>
@@ -440,6 +438,7 @@
     </div>
 
     <div id="results"></div>
+    <div class="last-update" id="lastUpdate" style="display: none;"></div>
   </div>
 
   <script>
@@ -601,8 +600,8 @@
         if (allOffers.length === 0) {
           showEmptyState('Aucune offre disponible', 'Revenez plus tard pour voir les nouvelles offres.');
         } else {
-          showEmptyState('Utilisez les filtres ci-dessus', 'Recherchez par mot-clé, type de contrat, localisation ou date pour trouver votre offre idéale.');
           updateStats(0, allOffers.length);
+          document.getElementById('results').innerHTML = '';
         }
         
       } catch (error) {
@@ -737,7 +736,7 @@
       if (searchQuery || contractFilter || locationFilter || dateFilter) {
         renderOffers(filteredOffers);
       } else {
-        showEmptyState('Utilisez les filtres ci-dessus', 'Recherchez par mot-clé, type de contrat, localisation ou date pour trouver votre offre idéale.');
+        document.getElementById('results').innerHTML = '';
       }
     }
 
@@ -780,7 +779,7 @@
       
       filteredOffers = [];
       updateStats(0, allOffers.length);
-      showEmptyState('Filtres réinitialisés', 'Utilisez les filtres ci-dessus pour rechercher des offres.');
+      document.getElementById('results').innerHTML = '';
     }
 
     // Event listeners
