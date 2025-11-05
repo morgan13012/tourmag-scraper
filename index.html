@@ -13,7 +13,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Roboto", "Helvetica Neue", Arial, sans-serif;
-      background: #f8f9fa;
+      background: #ffffff;
       color: #222;
       line-height: 1.6;
       min-height: 100vh;
@@ -33,19 +33,47 @@
       background: white;
       border-radius: 12px;
       padding: 2rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
       margin-bottom: 2rem;
       border: 1px solid #e8e8e8;
+    }
+
+    .search-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid #f0f0f0;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
 
     .search-title {
       font-size: 1.3rem;
       font-weight: 600;
       color: #2c3e50;
-      margin-bottom: 1.5rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
+    }
+
+    .search-info {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .stats-count {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .last-update {
+      font-size: 0.85rem;
+      color: #999;
     }
 
     .search-box {
@@ -153,24 +181,13 @@
       background: #e0e0e0;
     }
 
-    .stats-bar {
-      background: white;
-      border-radius: 10px;
-      padding: 1.2rem 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    .sort-section {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      border: 1px solid #e8e8e8;
-    }
-
-    .stats-count {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #2c3e50;
+      padding-top: 1rem;
+      border-top: 1px solid #f0f0f0;
+      margin-top: 1rem;
     }
 
     .sort-options {
@@ -356,18 +373,24 @@
       .search-section {
         padding: 1.5rem;
       }
+
+      .search-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .search-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
       
       .filters {
         grid-template-columns: 1fr;
       }
       
-      .stats-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      
-      .sort-options {
-        justify-content: space-between;
+      .sort-section {
+        justify-content: flex-start;
       }
     }
   </style>
@@ -375,8 +398,14 @@
 <body>
   <div class="container">
     <div class="search-section">
-      <div class="search-title">
-        🔍 Rechercher une offre d'emploi
+      <div class="search-header">
+        <div class="search-title">
+          🔍 Rechercher une offre
+        </div>
+        <div class="search-info">
+          <div class="stats-count" id="stats"></div>
+          <div class="last-update" id="lastUpdate"></div>
+        </div>
       </div>
       
       <div class="search-box">
@@ -418,16 +447,15 @@
       <div class="filter-actions">
         <button class="btn btn-secondary" onclick="clearFilters()">🔄 Réinitialiser</button>
       </div>
-    </div>
 
-    <div class="stats-bar" id="statsBar" style="display: none;">
-      <div class="stats-count" id="stats"></div>
-      <div class="sort-options">
-        <label>Trier par :</label>
-        <select id="sortBy" onchange="applySorting()">
-          <option value="date">Plus récent</option>
-          <option value="alpha">Alphabétique</option>
-        </select>
+      <div class="sort-section" id="sortSection" style="display: none;">
+        <div class="sort-options">
+          <label>Trier par :</label>
+          <select id="sortBy" onchange="applySorting()">
+            <option value="date">Plus récent</option>
+            <option value="alpha">Alphabétique</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -438,7 +466,6 @@
     </div>
 
     <div id="results"></div>
-    <div class="last-update" id="lastUpdate" style="display: none;"></div>
   </div>
 
   <script>
@@ -594,7 +621,7 @@
         populateLocationFilter();
         
         loadingEl.style.display = 'none';
-        document.getElementById('statsBar').style.display = 'flex';
+        document.getElementById('sortSection').style.display = 'flex';
         updateLastRefreshTime();
         
         if (allOffers.length === 0) {
@@ -802,8 +829,7 @@
       const now = new Date();
       const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
       const lastUpdateEl = document.getElementById('lastUpdate');
-      lastUpdateEl.textContent = `Dernière actualisation : ${timeString}`;
-      lastUpdateEl.style.display = 'block';
+      lastUpdateEl.textContent = `Actualisé à ${timeString}`;
     }
   </script>
 </body>
