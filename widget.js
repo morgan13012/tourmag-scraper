@@ -9,7 +9,7 @@
       .tmg-widget-container {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Roboto", "Helvetica Neue", Arial, sans-serif;
         background: #ffffff;
-        padding: 2rem 1rem;
+        padding: 1rem 1rem;
       }
       
       .tmg-search-section {
